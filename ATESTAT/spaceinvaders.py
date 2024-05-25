@@ -18,6 +18,7 @@ SHIP_SPEED = 5
 BULLET_WIDTH = 25
 BULLET_HEIGHT = 10
 BULLET_SPEED = 7
+BULLET_COOLDOWN = 300
 
 ENEMY_WIDTH = 70
 ENEMY_HEIGHT = 70
@@ -50,6 +51,7 @@ class Ship(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (100, SCREEN_HEIGHT // 2)
         self.speed = SHIP_SPEED
+        self.last_shot_time = 0
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -70,6 +72,14 @@ class Ship(pygame.sprite.Sprite):
             self.rect.top = 0
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
+
+    def shoot(self):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot_time > BULLET_COOLDOWN:
+            self.last_shot_time = current_time
+            bullet = Bullet(self.rect.right, self.rect.centery)
+            all_sprites.add(bullet)
+            bullets.add(bullet)
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -119,9 +129,7 @@ while running:
             running = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                bullet = Bullet(ship.rect.right, ship.rect.centery)
-                all_sprites.add(bullet)
-                bullets.add(bullet)
+                ship.shoot()
 
     all_sprites.update()
 
