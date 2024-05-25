@@ -13,19 +13,19 @@ GREEN = (0, 255, 0)
 
 SHIP_WIDTH = 120
 SHIP_HEIGHT = 120
-SHIP_SPEED = 5
+SHIP_SPEED = 5.5
 
 BULLET_WIDTH = 25
 BULLET_HEIGHT = 10
 BULLET_SPEED = 7
-BULLET_COOLDOWN = 300
+BULLET_COOLDOWN = 250
 
 ENEMY_WIDTH = 70
 ENEMY_HEIGHT = 70
 ENEMY_SPEED = 3
 
 FPS = 60
-ENEMY_SPAWN_RATE = 50  # Higher means fewer enemies
+ENEMY_SPAWN_RATE = 60  # Higher means fewer enemies
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Super Mario Game")
