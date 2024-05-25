@@ -42,6 +42,12 @@ bullet_image = pygame.transform.scale(bullet_image, (BULLET_WIDTH, BULLET_HEIGHT
 background_image = pygame.image.load('background.jpeg')
 background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
+shoot_sound = pygame.mixer.Sound('shoot_sound.mp3')
+enemy_death_sound = pygame.mixer.Sound('enemy_death_sound.mp3')
+
+shoot_sound.set_volume(0.2)
+enemy_death_sound.set_volume(0.3)
+
 class Ship(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -80,6 +86,7 @@ class Ship(pygame.sprite.Sprite):
             bullet = Bullet(self.rect.right, self.rect.centery)
             all_sprites.add(bullet)
             bullets.add(bullet)
+            shoot_sound.play()
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -111,12 +118,13 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.x -= self.speed
         if self.rect.right < 0:
             self.kill()
-
-ship = Ship()
+            
 all_sprites = pygame.sprite.Group()
-all_sprites.add(ship)
 bullets = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
+
+ship = Ship()
+all_sprites.add(ship)
 
 running = True
 clock = pygame.time.Clock()
@@ -136,6 +144,7 @@ while running:
     hits = pygame.sprite.groupcollide(bullets, enemies, True, True)
     if hits:
         score += len(hits)
+        enemy_death_sound.play()
 
     if ship.rect.right >= level_end_x:
         print("You win! Final score:", score)
