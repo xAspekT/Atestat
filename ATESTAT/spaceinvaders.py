@@ -24,7 +24,7 @@ ENEMY_HEIGHT = 70
 ENEMY_SPEED = 3
 
 FPS = 60
-ENEMY_SPAWN_RATE = 60  # Higher means fewer enemies
+ENEMY_SPAWN_RATE = 50  # Higher means fewer enemies
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Super Mario Game")
