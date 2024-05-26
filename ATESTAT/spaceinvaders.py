@@ -15,19 +15,17 @@ SHIP_WIDTH = 120
 SHIP_HEIGHT = 120
 SHIP_SPEED = 6
 
-
 BULLET_WIDTH = 25
 BULLET_HEIGHT = 10
 BULLET_SPEED = 7
+BULLET_COOLDOWN = 250
 
 ENEMY_WIDTH = 70
 ENEMY_HEIGHT = 70
 ENEMY_SPEED = 3
 
 FPS = 60
-
 ENEMY_SPAWN_RATE = 60  #cu cat e val mai mare cu atat sunt mai putini inamici
-
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Space Conquerors")
@@ -44,6 +42,12 @@ bullet_image = pygame.transform.scale(bullet_image, (BULLET_WIDTH, BULLET_HEIGHT
 background_image = pygame.image.load('background.jpeg')
 background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
+shoot_sound = pygame.mixer.Sound('shoot_sound.mp3')
+enemy_death_sound = pygame.mixer.Sound('enemy_death_sound.mp3')
+
+shoot_sound.set_volume(0.2)
+enemy_death_sound.set_volume(0.3)
+
 class Ship(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -53,7 +57,7 @@ class Ship(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (100, SCREEN_HEIGHT // 2)
         self.speed = SHIP_SPEED
-        self.health = 3  
+        self.last_shot_time = 0
 
     def update(self):
         keys = pygame.key.get_pressed()
@@ -74,6 +78,15 @@ class Ship(pygame.sprite.Sprite):
             self.rect.top = 0
         if self.rect.bottom > SCREEN_HEIGHT:
             self.rect.bottom = SCREEN_HEIGHT
+
+    def shoot(self):
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_shot_time > BULLET_COOLDOWN:
+            self.last_shot_time = current_time
+            bullet = Bullet(self.rect.right, self.rect.centery)
+            all_sprites.add(bullet)
+            bullets.add(bullet)
+            shoot_sound.play()
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -184,10 +197,7 @@ bullets = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 
 ship = Ship()
-all_sprites = pygame.sprite.Group()
 all_sprites.add(ship)
-bullets = pygame.sprite.Group()
-enemies = pygame.sprite.Group()
 
 running = True
 paused = False
@@ -202,7 +212,6 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
-
             if event.key == pygame.K_ESCAPE:
                 if showing_quit_confirmation:
                     showing_quit_confirmation = False
@@ -272,10 +281,8 @@ while running:
         screen.blit(background_image, (0, 0))
         yes_button_rect, no_button_rect = show_quit_confirmation()
             
-
     pygame.display.flip()
     clock.tick(FPS)
 
 
 pygame.quit()
-
