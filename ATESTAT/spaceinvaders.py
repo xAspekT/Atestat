@@ -35,7 +35,15 @@ GIANTENEMY_SPEED = ENEMY_SPEED * 0.5
 
 FPS = 60
 
-ENEMY_SPAWN_RATE = 60  #cu cat e val mai mare cu atat sunt mai putini inamici
+ENEMY_SPAWN_RATE = 80  #cu cat e val mai mare cu atat sunt mai putini inamici
+
+restart_button_image = pygame.image.load('restart_button.png')
+restart_button_image = pygame.transform.scale(restart_button_image, (200, 70))
+restart_button_rect = restart_button_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100))
+
+quit_button_image = pygame.image.load('quit_button.png')
+quit_button_image = pygame.transform.scale(quit_button_image, (200, 70))
+quit_button_rect = quit_button_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200))
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Space Conquerors")
@@ -133,6 +141,28 @@ class Enemy(pygame.sprite.Sprite):
         if self.rect.right < 0:
             self.kill()
 
+def show_game_over_screen(score):
+    font = pygame.font.Font(None, 74)
+    game_over_text = font.render("You Died", True, WHITE)
+    game_over_rect = game_over_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100))
+
+    score_text = font.render(f"Score: {score}", True, WHITE)
+    score_rect = score_text.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2))
+
+    screen.blit(game_over_text, game_over_rect)
+    screen.blit(score_text, score_rect)
+    
+    pygame.display.flip()
+    
+    restart_button_rect = restart_button_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100))
+    screen.blit(restart_button_image, restart_button_rect)
+
+    quit_button_rect = quit_button_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200))
+    screen.blit(quit_button_image, quit_button_rect)
+
+    pygame.display.flip()
+
+    return restart_button_rect, quit_button_rect
 
 def draw_button(screen, rect, text, font, color):
     pygame.draw.rect(screen, WHITE, rect)
@@ -147,28 +177,25 @@ def show_pause_menu():
     resume_button_image = pygame.image.load('resume_button.png')
     resume_button_image = pygame.transform.scale(resume_button_image, (300, 70))
 
-    high_scores_button_image = pygame.image.load('high_scores_button.png')
-    high_scores_button_image = pygame.transform.scale(high_scores_button_image, (300, 70))
-
     quit_button_image = pygame.image.load('quit_button.png')
-    quit_button_image = pygame.transform.scale(quit_button_image, (300, 70))
+    quit_button_image = pygame.transform.scale(quit_button_image, (200, 70))
 
     button_width = resume_button_image.get_width()
     button_height = resume_button_image.get_height()
     button_x = (SCREEN_WIDTH - button_width) // 2
-    resume_button_y = (SCREEN_HEIGHT - 3 * button_height) // 2
-    high_scores_button_y = resume_button_y + button_height + 20
-    quit_button_y = high_scores_button_y + button_height + 20
+    resume_button_y = (SCREEN_HEIGHT - 2 * button_height) // 2
+    quit_button_y = resume_button_y + button_height + 20
 
     screen.blit(resume_button_image, (button_x, resume_button_y))
-    screen.blit(high_scores_button_image, (button_x, high_scores_button_y))
-    screen.blit(quit_button_image, (button_x, quit_button_y))
+    quit_button_x = (SCREEN_WIDTH - quit_button_image.get_width()) // 2
+    
+    screen.blit(quit_button_image, (quit_button_x, quit_button_y))
 
     pygame.display.flip()
 
-    return resume_button_image.get_rect(topleft=(SCREEN_WIDTH//2 - 200, SCREEN_HEIGHT//2 - 100)), \
-           high_scores_button_image.get_rect(topleft=(SCREEN_WIDTH//2 - 200, SCREEN_HEIGHT//2)), \
-           quit_button_image.get_rect(topleft=(SCREEN_WIDTH//2 - 200, SCREEN_HEIGHT//2 + 100))
+    return resume_button_image.get_rect(topleft=(button_x, resume_button_y)), \
+           quit_button_image.get_rect(topleft=(quit_button_x, quit_button_y))
+
 
 def show_quit_confirmation():
     font = pygame.font.Font(None, 74)
@@ -194,19 +221,6 @@ def show_quit_confirmation():
     pygame.display.flip()
     return pygame.Rect(button_x, yes_button_y, 200, 70), pygame.Rect(button_x, no_button_y, 200, 70)
 
-
-
-def show_high_scores():
-    font = pygame.font.Font(None, 36)
-    scores_rect = pygame.Rect(SCREEN_WIDTH//2 - 125, SCREEN_HEIGHT//2 - 200, 250, 400)
-    draw_text(screen, "High Scores:", font, WHITE, scores_rect.move(0, -50))
-
-    draw_text(screen, "1. Player1 - 1000", font, WHITE, scores_rect.move(0, 0))
-    draw_text(screen, "2. Player2 - 800", font, WHITE, scores_rect.move(0, 50))
-    draw_text(screen, "3. Player3 - 600", font, WHITE, scores_rect.move(0, 100))
-    draw_text(screen, "Press Esc to return", font, WHITE, scores_rect.move(0, 200))
-
-    pygame.display.flip()
 
 all_sprites = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
@@ -256,7 +270,6 @@ giantenemies = pygame.sprite.Group()
 
 running = True
 paused = False
-showing_high_scores = False
 showing_quit_confirmation = False
 clock = pygame.time.Clock()
 score = 0
@@ -268,28 +281,20 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
-
             if event.key == pygame.K_ESCAPE:
                 if showing_quit_confirmation:
                     showing_quit_confirmation = False
-                    paused = True
-                elif showing_high_scores:
-                    showing_high_scores = False
                     paused = True
                 elif not paused:
                     paused = True
                 else:
                     paused = False
-            elif event.key == pygame.K_SPACE and not paused and not showing_high_scores and not showing_quit_confirmation:
+            elif event.key == pygame.K_SPACE and not paused and not showing_quit_confirmation:
                 ship.shoot()
-                
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             mouse_pos = pygame.mouse.get_pos()
-            if paused and not showing_high_scores and not showing_quit_confirmation:
+            if paused and not showing_quit_confirmation:
                 if resume_button_rect.collidepoint(mouse_pos):
-                    paused = False
-                elif high_scores_button_rect.collidepoint(mouse_pos):
-                    showing_high_scores = True
                     paused = False
                 elif quit_button_rect.collidepoint(mouse_pos):
                     showing_quit_confirmation = True
@@ -302,15 +307,13 @@ while running:
                     showing_quit_confirmation = False
                     paused = True
 
-
-    if not paused and not showing_high_scores and not showing_quit_confirmation:
+    if not paused and not showing_quit_confirmation:
             all_sprites.update()
             
             hits = pygame.sprite.groupcollide(bullets, enemies, True, True)
             if hits:
                 score += len(hits)
                 enemy_death_sound.play()
-            
             
             if random.randint(1, ENEMY_SPAWN_RATE) == 1:
                 enemy = Enemy()
@@ -330,11 +333,7 @@ while running:
             
     elif paused:
         screen.blit(background_image, (0, 0))
-        resume_button_rect, high_scores_button_rect, quit_button_rect = show_pause_menu()
-            
-    elif showing_high_scores:
-        screen.blit(background_image, (0, 0))
-        show_high_scores()
+        resume_button_rect, quit_button_rect = show_pause_menu()
             
     elif showing_quit_confirmation:
         screen.blit(background_image, (0, 0))
@@ -400,7 +399,36 @@ while running:
         all_sprites.add(giantenemy)
         giantenemies.add(giantenemy)
         last_giant_spawn_score = score
+    
+    if ship.health <= 0:
+        show_game_over_screen(score)
+        waiting_for_action = True
+        while waiting_for_action:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    mouse_pos = pygame.mouse.get_pos()
+                    if restart_button_rect.collidepoint(mouse_pos):
+                        ship.health = 3
+                        score = 0
 
+                        ship.rect.center = (100, SCREEN_HEIGHT // 2)
+
+                        all_sprites.empty()
+                        bullets.empty()
+                        enemies.empty()
+                        bigenemies.empty()
+                        giantenemies.empty()
+
+                        all_sprites.add(ship)
+
+                        running = True
+                        waiting_for_action = False
+                    elif quit_button_rect.collidepoint(mouse_pos):
+                        pygame.quit()
+                        quit()
 
     pygame.display.flip()
     clock.tick(FPS)
