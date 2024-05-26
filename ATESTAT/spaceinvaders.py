@@ -35,7 +35,7 @@ GIANTENEMY_SPEED = ENEMY_SPEED * 0.5
 
 FPS = 60
 
-ENEMY_SPAWN_RATE = 80  #cu cat e val mai mare cu atat sunt mai putini inamici
+ENEMY_SPAWN_RATE = 100  #cu cat e val mai mare cu atat sunt mai putini inamici
 
 restart_button_image = pygame.image.load('restart_button.png')
 restart_button_image = pygame.transform.scale(restart_button_image, (200, 70))
@@ -68,6 +68,18 @@ background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREE
 
 shoot_sound = pygame.mixer.Sound('shoot_sound.mp3')
 enemy_death_sound = pygame.mixer.Sound('enemy_death_sound.mp3')
+giant_enemy_death_sound = pygame.mixer.Sound('giant_enemy_death_sound.mp3')
+big_enemy_death_sound = pygame.mixer.Sound('big_enemy_death_sound.mp3')
+pygame.mixer.music.load('ost.mp3')
+pygame.mixer.music.set_volume(0.6)
+pygame.mixer.music.play(-1)
+pause_sound = pygame.mixer.Sound('pause.mp3')
+
+def play_pause_sound(volume):
+    pause_sound.set_volume(volume)
+    if pygame.mixer.get_busy():
+        pygame.mixer.stop()
+    pause_sound.play()
 
 class Ship(pygame.sprite.Sprite):
     def __init__(self):
@@ -157,7 +169,6 @@ def show_game_over_screen(score):
     restart_button_rect = restart_button_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100))
     screen.blit(restart_button_image, restart_button_rect)
 
-    quit_button_rect = quit_button_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200))
     screen.blit(quit_button_image, quit_button_rect)
 
     pygame.display.flip()
@@ -254,6 +265,7 @@ class GiantEnemy(pygame.sprite.Sprite):
         self.rect.y = random.randint(0, SCREEN_HEIGHT - GIANTENEMY_HEIGHT)
         self.speed = GIANTENEMY_SPEED
         self.health = 20
+
     def update(self):
         self.rect.x -= self.speed
         if self.rect.right < 0:
@@ -285,10 +297,16 @@ while running:
                 if showing_quit_confirmation:
                     showing_quit_confirmation = False
                     paused = True
+                    pygame.mixer.music.pause()
+                    play_pause_sound(0.5)
                 elif not paused:
                     paused = True
+                    pygame.mixer.music.pause()
+                    play_pause_sound(0.5)
                 else:
                     paused = False
+                    play_pause_sound(0)
+                    pygame.mixer.music.unpause()
             elif event.key == pygame.K_SPACE and not paused and not showing_quit_confirmation:
                 ship.shoot()
         elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -296,9 +314,13 @@ while running:
             if paused and not showing_quit_confirmation:
                 if resume_button_rect.collidepoint(mouse_pos):
                     paused = False
+                    pygame.mixer.music.unpause()
+                    play_pause_sound(0)
                 elif quit_button_rect.collidepoint(mouse_pos):
                     showing_quit_confirmation = True
                     paused = False
+                    pygame.mixer.music.pause()
+                    play_pause_sound(0.5)
             elif showing_quit_confirmation:
                 yes_button_rect, no_button_rect = show_quit_confirmation()
                 if yes_button_rect.collidepoint(mouse_pos):
@@ -349,6 +371,7 @@ while running:
             big_enemy.health -= 1
             if big_enemy.health <= 0:
                 big_enemy.kill()
+                big_enemy_death_sound.play()
                 score += 3
 
     giant_hits = pygame.sprite.groupcollide(bullets, giantenemies, True, False)
@@ -357,6 +380,7 @@ while running:
             giant_enemy.health -= 1
             if giant_enemy.health <= 0:
                 giant_enemy.kill()
+                giant_enemy_death_sound.play()
                 score += 15
 
     collisions = pygame.sprite.spritecollide(ship, enemies, True)
@@ -401,6 +425,9 @@ while running:
         last_giant_spawn_score = score
     
     if ship.health <= 0:
+        pygame.mixer.music.stop()
+        pygame.mixer.music.load('joever.mp3')
+        pygame.mixer.music.play()
         show_game_over_screen(score)
         waiting_for_action = True
         while waiting_for_action:
@@ -429,6 +456,7 @@ while running:
                     elif quit_button_rect.collidepoint(mouse_pos):
                         pygame.quit()
                         quit()
+
 
     pygame.display.flip()
     clock.tick(FPS)
