@@ -15,16 +15,26 @@ SHIP_WIDTH = 120
 SHIP_HEIGHT = 120
 SHIP_SPEED = 6
 
+
 BULLET_WIDTH = 25
 BULLET_HEIGHT = 10
 BULLET_SPEED = 7
-BULLET_COOLDOWN = 250
+BULLET_COOLDOWN = 169
 
 ENEMY_WIDTH = 70
 ENEMY_HEIGHT = 70
 ENEMY_SPEED = 3
 
+BIGENEMY_WIDTH = int(ENEMY_WIDTH * 1.5)
+BIGENEMY_HEIGHT = int(ENEMY_HEIGHT * 1.5)
+BIGENEMY_SPEED = 2
+
+GIANTENEMY_WIDTH = int(ENEMY_WIDTH * 3)
+GIANTENEMY_HEIGHT = int(ENEMY_HEIGHT * 3)
+GIANTENEMY_SPEED = ENEMY_SPEED * 0.5
+
 FPS = 60
+
 ENEMY_SPAWN_RATE = 60  #cu cat e val mai mare cu atat sunt mai putini inamici
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -36,6 +46,12 @@ ship_image = pygame.transform.scale(ship_image, (SHIP_WIDTH, SHIP_HEIGHT))
 enemy_image = pygame.image.load('enemy.png')
 enemy_image = pygame.transform.scale(enemy_image, (ENEMY_WIDTH, ENEMY_HEIGHT))
 
+bigenemy_image = pygame.image.load('bigenemy.png')
+bigenemy_image = pygame.transform.scale(bigenemy_image, (BIGENEMY_WIDTH, BIGENEMY_HEIGHT))
+
+giantenemy_image = pygame.image.load('giant.png')
+giantenemy_image = pygame.transform.scale(giantenemy_image, (GIANTENEMY_WIDTH, GIANTENEMY_HEIGHT))
+
 bullet_image = pygame.image.load('bullet.png')
 bullet_image = pygame.transform.scale(bullet_image, (BULLET_WIDTH, BULLET_HEIGHT))
 
@@ -44,9 +60,6 @@ background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREE
 
 shoot_sound = pygame.mixer.Sound('shoot_sound.mp3')
 enemy_death_sound = pygame.mixer.Sound('enemy_death_sound.mp3')
-
-shoot_sound.set_volume(0.2)
-enemy_death_sound.set_volume(0.3)
 
 class Ship(pygame.sprite.Sprite):
     def __init__(self):
@@ -57,6 +70,7 @@ class Ship(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (100, SCREEN_HEIGHT // 2)
         self.speed = SHIP_SPEED
+        self.health = 3  
         self.last_shot_time = 0
 
     def update(self):
@@ -86,7 +100,7 @@ class Ship(pygame.sprite.Sprite):
             bullet = Bullet(self.rect.right, self.rect.centery)
             all_sprites.add(bullet)
             bullets.add(bullet)
-            shoot_sound.play()
+            shoot_sound.play() 
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -118,6 +132,7 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.x -= self.speed
         if self.rect.right < 0:
             self.kill()
+
 
 def draw_button(screen, rect, text, font, color):
     pygame.draw.rect(screen, WHITE, rect)
@@ -180,6 +195,7 @@ def show_quit_confirmation():
     return pygame.Rect(button_x, yes_button_y, 200, 70), pygame.Rect(button_x, no_button_y, 200, 70)
 
 
+
 def show_high_scores():
     font = pygame.font.Font(None, 36)
     scores_rect = pygame.Rect(SCREEN_WIDTH//2 - 125, SCREEN_HEIGHT//2 - 200, 250, 400)
@@ -196,8 +212,47 @@ all_sprites = pygame.sprite.Group()
 bullets = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 
+class BigEnemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((BIGENEMY_WIDTH, BIGENEMY_HEIGHT))
+        self.image.fill(BLACK)
+        self.image = bigenemy_image
+        self.rect = self.image.get_rect()
+        self.rect.x = SCREEN_WIDTH
+        self.rect.y = random.randint(0, SCREEN_HEIGHT - BIGENEMY_HEIGHT)
+        self.speed = BIGENEMY_SPEED
+        self.health = 3
+
+    def update(self):
+        self.rect.x -= self.speed
+        if self.rect.right < 0:
+            self.kill()
+
+class GiantEnemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((GIANTENEMY_WIDTH, GIANTENEMY_HEIGHT))
+        self.image.fill(BLACK)
+        self.image = giantenemy_image
+        self.rect = self.image.get_rect()
+        self.rect.x = SCREEN_WIDTH
+        self.rect.y = random.randint(0, SCREEN_HEIGHT - GIANTENEMY_HEIGHT)
+        self.speed = GIANTENEMY_SPEED
+        self.health = 20
+    def update(self):
+        self.rect.x -= self.speed
+        if self.rect.right < 0:
+            self.kill()
+
+
 ship = Ship()
+all_sprites = pygame.sprite.Group()
 all_sprites.add(ship)
+bullets = pygame.sprite.Group()
+enemies = pygame.sprite.Group()
+bigenemies = pygame.sprite.Group()
+giantenemies = pygame.sprite.Group()
 
 running = True
 paused = False
@@ -205,6 +260,7 @@ showing_high_scores = False
 showing_quit_confirmation = False
 clock = pygame.time.Clock()
 score = 0
+last_giant_spawn_score = 0
 level_end_x = SCREEN_WIDTH - 100
 
 while running:
@@ -212,6 +268,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
+
             if event.key == pygame.K_ESCAPE:
                 if showing_quit_confirmation:
                     showing_quit_confirmation = False
@@ -245,6 +302,7 @@ while running:
                     showing_quit_confirmation = False
                     paused = True
 
+
     if not paused and not showing_high_scores and not showing_quit_confirmation:
             all_sprites.update()
             
@@ -253,9 +311,6 @@ while running:
                 score += len(hits)
                 enemy_death_sound.play()
             
-            if ship.rect.right >= level_end_x:
-                print("You win! Final score:", score)
-                running = False
             
             if random.randint(1, ENEMY_SPAWN_RATE) == 1:
                 enemy = Enemy()
@@ -268,6 +323,10 @@ while running:
             font = pygame.font.Font(None, 36)
             text = font.render(f'Score: {score}', True, WHITE)
             screen.blit(text, (10, 10))
+
+            health_text = font.render(f'Health: {ship.health}', True, WHITE)
+            screen.blit(health_text, (SCREEN_WIDTH - 150, 10))
+            all_sprites.draw(screen)
             
     elif paused:
         screen.blit(background_image, (0, 0))
@@ -281,8 +340,71 @@ while running:
         screen.blit(background_image, (0, 0))
         yes_button_rect, no_button_rect = show_quit_confirmation()
             
+    hits = pygame.sprite.groupcollide(bullets, enemies, True, True)
+    if hits:
+        score += len(hits)
+
+    big_hits = pygame.sprite.groupcollide(bullets, bigenemies, True, False)
+    for big_enemy_list in big_hits.values():
+        for big_enemy in big_enemy_list:
+            big_enemy.health -= 1
+            if big_enemy.health <= 0:
+                big_enemy.kill()
+                score += 3
+
+    giant_hits = pygame.sprite.groupcollide(bullets, giantenemies, True, False)
+    for giant_enemy_list in giant_hits.values():
+        for giant_enemy in giant_enemy_list:
+            giant_enemy.health -= 1
+            if giant_enemy.health <= 0:
+                giant_enemy.kill()
+                score += 15
+
+    collisions = pygame.sprite.spritecollide(ship, enemies, True)
+    if collisions:
+        ship.health -= 1
+        if ship.health <= 0:
+            print("Game Over! Final score:", score)
+            running = False
+
+    big_collisions = pygame.sprite.spritecollide(ship, bigenemies, True)
+    if big_collisions:
+        ship.health -= 1
+        if ship.health <= 0:
+            print("Game Over! Final score:", score)
+            running = False
+
+    giant_collisions = pygame.sprite.spritecollide(ship, giantenemies, True)
+    if giant_collisions:
+        ship.health -= 3
+        if ship.health <= 0:
+            print("Game Over! Final score:", score)
+            running = False
+
+    if ship.rect.right >= level_end_x:
+        print("You win! Final score:", score)
+        running = False
+
+    if random.randint(1, ENEMY_SPAWN_RATE) == 1:
+        enemy = Enemy()
+        all_sprites.add(enemy)
+        enemies.add(enemy)
+
+    if score >= 10 and random.randint(1, ENEMY_SPAWN_RATE * 2) == 1:
+        bigenemy = BigEnemy()
+        all_sprites.add(bigenemy)
+        bigenemies.add(bigenemy)
+
+    if score >= 50 and score % 25 == 0 and score != last_giant_spawn_score:
+        giantenemy = GiantEnemy()
+        all_sprites.add(giantenemy)
+        giantenemies.add(giantenemy)
+        last_giant_spawn_score = score
+
+
     pygame.display.flip()
     clock.tick(FPS)
 
 
 pygame.quit()
+
