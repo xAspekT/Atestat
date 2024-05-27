@@ -43,7 +43,6 @@ restart_button_rect = restart_button_image.get_rect(center=(SCREEN_WIDTH // 2, S
 
 quit_button_image = pygame.image.load('quit_button.png')
 quit_button_image = pygame.transform.scale(quit_button_image, (200, 70))
-quit_button_rect = quit_button_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200))
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Space Conquerors")
@@ -173,6 +172,7 @@ def show_game_over_screen(score):
     restart_button_rect = restart_button_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100))
     screen.blit(restart_button_image, restart_button_rect)
 
+    quit_button_rect = quit_button_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200))
     screen.blit(quit_button_image, quit_button_rect)
 
     pygame.display.flip()
