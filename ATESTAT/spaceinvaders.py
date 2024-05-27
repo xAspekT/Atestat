@@ -67,9 +67,13 @@ background_image = pygame.image.load('background.jpeg')
 background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 shoot_sound = pygame.mixer.Sound('shoot_sound.mp3')
+shoot_sound.set_volume(0.2)
 enemy_death_sound = pygame.mixer.Sound('enemy_death_sound.mp3')
+enemy_death_sound.set_volume(0.8)
 giant_enemy_death_sound = pygame.mixer.Sound('giant_enemy_death_sound.mp3')
+giant_enemy_death_sound.set_volume(0.7)
 big_enemy_death_sound = pygame.mixer.Sound('big_enemy_death_sound.mp3')
+big_enemy_death_sound.set_volume(1.2)
 pygame.mixer.music.load('ost.mp3')
 pygame.mixer.music.set_volume(0.6)
 pygame.mixer.music.play(-1)
@@ -386,27 +390,14 @@ while running:
     collisions = pygame.sprite.spritecollide(ship, enemies, True)
     if collisions:
         ship.health -= 1
-        if ship.health <= 0:
-            print("Game Over! Final score:", score)
-            running = False
 
     big_collisions = pygame.sprite.spritecollide(ship, bigenemies, True)
     if big_collisions:
         ship.health -= 1
-        if ship.health <= 0:
-            print("Game Over! Final score:", score)
-            running = False
 
     giant_collisions = pygame.sprite.spritecollide(ship, giantenemies, True)
     if giant_collisions:
         ship.health -= 3
-        if ship.health <= 0:
-            print("Game Over! Final score:", score)
-            running = False
-
-    if ship.rect.right >= level_end_x:
-        print("You win! Final score:", score)
-        running = False
 
     if random.randint(1, ENEMY_SPAWN_RATE) == 1:
         enemy = Enemy()
@@ -457,10 +448,7 @@ while running:
                         pygame.quit()
                         quit()
 
-
     pygame.display.flip()
     clock.tick(FPS)
 
-
 pygame.quit()
-
