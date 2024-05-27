@@ -43,7 +43,6 @@ restart_button_rect = restart_button_image.get_rect(center=(SCREEN_WIDTH // 2, S
 
 quit_button_image = pygame.image.load('quit_button.png')
 quit_button_image = pygame.transform.scale(quit_button_image, (200, 70))
-quit_button_rect = quit_button_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200))
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Space Conquerors")
@@ -73,7 +72,7 @@ enemy_death_sound.set_volume(0.7)
 giant_enemy_death_sound = pygame.mixer.Sound('giant_enemy_death_sound.mp3')
 giant_enemy_death_sound.set_volume(1.3)
 big_enemy_death_sound = pygame.mixer.Sound('big_enemy_death_sound.mp3')
-big_enemy_death_sound.set_volume(0.2)
+big_enemy_death_sound.set_volume(0.4)
 pygame.mixer.music.load('ost.mp3')
 pygame.mixer.music.set_volume(1.1)
 pygame.mixer.music.play(-1)
@@ -173,6 +172,7 @@ def show_game_over_screen(score):
     restart_button_rect = restart_button_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100))
     screen.blit(restart_button_image, restart_button_rect)
 
+    quit_button_rect = quit_button_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 200))
     screen.blit(quit_button_image, quit_button_rect)
 
     pygame.display.flip()
