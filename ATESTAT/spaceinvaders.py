@@ -35,7 +35,7 @@ GIANTENEMY_SPEED = ENEMY_SPEED * 0.5
 
 FPS = 60
 
-ENEMY_SPAWN_RATE = 100  #cu cat e val mai mare cu atat sunt mai putini inamici
+ENEMY_SPAWN_RATE = 75  #cu cat e val mai mare cu atat sunt mai putini inamici
 
 restart_button_image = pygame.image.load('restart_button.png')
 restart_button_image = pygame.transform.scale(restart_button_image, (200, 70))
@@ -72,7 +72,7 @@ enemy_death_sound.set_volume(0.7)
 giant_enemy_death_sound = pygame.mixer.Sound('giant_enemy_death_sound.mp3')
 giant_enemy_death_sound.set_volume(1.3)
 big_enemy_death_sound = pygame.mixer.Sound('big_enemy_death_sound.mp3')
-big_enemy_death_sound.set_volume(0.4)
+big_enemy_death_sound.set_volume(0.3)
 pygame.mixer.music.load('ost.mp3')
 pygame.mixer.music.set_volume(1.1)
 pygame.mixer.music.play(-1)
